@@ -127,28 +127,6 @@
       text-align: center;
       padding: 20px;
     }
-    .category-filter {
-      display: flex;
-      justify-content: center;  /* Horizontally centers the buttons */
-      align-items: center;      /* Vertically centers the buttons */
-      gap: 20px;                /* Optional: adds space between buttons */
-      margin-top: 20px;         /* Optional: adjust the top margin */
-    }
-
-    .category-filter button {
-      padding: 10px 20px;       /* Optional: adjust the button size */
-      font-size: 16px;          /* Optional: adjust the font size */
-      cursor: pointer;         /* Adds pointer cursor on hover */
-      background-color: #f1f1f1; /* Optional: light background color for the buttons */
-      border: 1px solid #ccc;  /* Optional: border for buttons */
-      border-radius: 5px;      /* Optional: rounded corners */
-      transition: background-color 0.3s; /* Optional: smooth hover effect */
-    }
-
-    .category-filter button:hover {
-      background-color: #ddd;  /* Optional: hover effect */
-    }
-
   </style>
 </head>
 <body class="dark-mode">
@@ -169,7 +147,6 @@
   </div>
 </header>
 
-
 <div class="slider-container">
   <div class="slides" id="slides">
     <div class="slide" style="background-image: url('images/banner3.png');"></div>
@@ -181,29 +158,13 @@
     <button onclick="nextSlide()">→</button>
   </div>
 </div>
-<div class="category-filter">
-  <button onclick="filterByCategory('books')">📚  জনপ্রিয় প্রোডাক্টস</button>
-  <button onclick="filterByCategory('electronics')">💻 Books</button>
-  <button onclick="filterByCategory('stationery')">✏️ Stationery</button>
-</div>
 
 <div class="product-grid" id="productGrid"></div>
 <div class="pagination" id="pagination"></div>
 
-<footer>
-  <!-- কন্টাক্ট ফর্ম / Google Form -->
-<section id="contact-form">
-  <h2>যোগাযোগ করুন</h2>
-  <p>যেকোনো প্রশ্ন বা সমস্যার জন্য, আমাদের কন্টাক্ট ফর্ম পূরণ করুন অথবা নিচের WhatsApp লিঙ্ক ব্যবহার করে আমাদের সাথে যোগাযোগ করুন।</p>
-  <a href="https://forms.gle/your-google-form-link" target="_blank"> <!--গুগল ফর্মে কন্টাক্ট ফর্ম তৈরি করুন। উদাহরণস্বরূপ, ফর্মের লিঙ্ক হতে পারে: https://forms.gle/your-google-form-link. পরে লিংক টা এ লাইনা বসাই দিয়েন।  -->
-    <button>কন্টাক্ট ফর্ম</button>
-  </a>
-  <a href="https://forms.gle/your-google-form-link" target="_blank">
-    <a href="https://wa.me/0096871858099?text=আমি অর্ডার করতে চাই ${p.name}: https://yourwebsite.com/product${p.id}" target="_blank"><button>WhatsApp</button></a>
 
-    
-  </a>
-</section>
+
+<footer>
   <p>📞 মোবাইল: 01234567890 | 🏠 ঠিকানা: ঢাকা, বাংলাদেশ</p>
 </footer>
 
@@ -254,12 +215,13 @@
   const totalSlides = slides.children.length;
 
   function showSlide(index) {
-    const dir = document.documentElement.dir;
-    const offset = index * 100;
-    slides.style.transform = dir === "rtl"
-      ? `translateX(-${offset}%)`
-      : `translateX(-${offset}%)`;
-  }
+  const dir = document.documentElement.dir;
+  const offset = index * 100;
+  slides.style.transform = dir === "rtl"
+    ? `translateX(${offset}%)`   // ডান দিক থেকে বামে
+    : `translateX(-${offset}%)`; // বাম দিক থেকে ডানে
+}
+
 
   function prevSlide() {
     currentIndex = currentIndex === 0 ? totalSlides - 1 : currentIndex - 1;
@@ -273,66 +235,111 @@
 
   setInterval(nextSlide, 5000);
 
-  const products = Array.from({ length: 200 }).map((_, i) => ({
-    id: i + 1,
-    name: `Product ${i + 1}`,
-    price: 100 + i,
-    category: i % 3 === 0 ? "books" : i % 3 === 1 ? "electronics" : "stationery",
-    image: `https://via.placeholder.com/200x150?text=Product+${i + 1}`,
-    offer: i % 10 === 0 ? "নতুন" : ""
-  }));
 
+  const products = Array.from({ length: 200 }).map((_, i) => {
+    const isNew = i % 10 === 0;
+    const hasOffer = i % 7 === 0;
+    const discount = hasOffer ? `${10 + (i % 3) * 5}%` : "";
+    const stars = "★".repeat(4 + (i % 2)) + "☆".repeat(1 - (i % 2));
+    return {
+      id: i + 1,
+      name: `Product ${i + 1}`,
+      price: 100 + i,
+      image: `https://via.placeholder.com/200x150?text=Product+${i + 1}`,
+      badge: isNew ? "নতুন" : hasOffer ? "অফার" : "",
+      discount,
+      stars
+    };
+  });
+
+  const productsPerPage = 30;
   let currentPage = 1;
   let filteredCache = products;
 
-  function renderFilteredProducts(filtered) {
-    const grid = document.getElementById("productGrid");
-    const start = (currentPage - 1) * 30;
-    const end = start + 30;
-    const shown = filtered.slice(start, end);
 
-    grid.innerHTML = shown.map(p => `
+
+
+  
+
+  function renderProducts() {
+    const grid = document.getElementById("productGrid");
+    const start = (currentPage - 1) * productsPerPage;
+    const end = start + productsPerPage;
+    const shownProducts = products.slice(start, end);
+    grid.innerHTML = shownProducts.map(p => `
       <div class="product-card">
         ${p.offer ? `<div class="badge">${p.offer}</div>` : ""}
         <img src="${p.image}" alt="${p.name}">
         <h3>${p.name}</h3>
         <p>৳ ${p.price}</p>
-        <a href="https://wa.me/0096871858099?text=আমি অর্ডার করতে চাই ${p.name}: https://yourwebsite.com/product${p.id}" target="_blank">WhatsApp অর্ডার</a>
+        <a href="https://wa.me/8801234567890?text=আমি অর্ডার করতে চাই ${p.name}: https://yourwebsite.com/product${p.id}" target="_blank">WhatsApp অর্ডার</a>
       </div>`).join("");
   }
 
-  function renderFilteredPagination(filtered) {
+  function renderPagination() {
     const pagination = document.getElementById("pagination");
-    const totalPages = Math.ceil(filtered.length / 30);
+    const totalPages = Math.ceil(products.length / productsPerPage);
     pagination.innerHTML = Array.from({ length: totalPages }, (_, i) => `
-      <button onclick="goToFilteredPage(${i + 1})">${i + 1}</button>
+      <button onclick="goToPage(${i + 1})">${i + 1}</button>
     `).join("");
   }
 
-  function goToFilteredPage(page) {
+  function goToPage(page) {
     currentPage = page;
-    renderFilteredProducts(filteredCache);
+    renderProducts();
   }
 
-  document.getElementById("searchInput").addEventListener("input", () => {
-    const keyword = searchInput.value.toLowerCase();
-    filteredCache = products.filter(p =>
-      p.name.toLowerCase().includes(keyword)
-    );
-    currentPage = 1;
-    renderFilteredProducts(filteredCache);
-    renderFilteredPagination(filteredCache);
-  });
-
-  function filterByCategory(category) {
-    filteredCache = products.filter(p => p.category === category);
-    currentPage = 1;
-    renderFilteredProducts(filteredCache);
-    renderFilteredPagination(filteredCache);
-  }
-
-  renderFilteredProducts(filteredCache);
-  renderFilteredPagination(filteredCache);
+  renderProducts();
+  renderPagination();
+  showSlide(currentIndex);
 </script>
+<script>
+    const searchInput = document.getElementById("searchInput");
+  
+    searchInput.addEventListener("input", () => {
+      const keyword = searchInput.value.toLowerCase();
+      const filteredProducts = products.filter(p =>
+        p.name.toLowerCase().includes(keyword)
+      );
+  
+      currentPage = 1;
+      renderFilteredProducts(filteredProducts);
+      renderFilteredPagination(filteredProducts);
+    });
+  
+    function renderFilteredProducts(filtered) {
+      const grid = document.getElementById("productGrid");
+      const start = (currentPage - 1) * productsPerPage;
+      const end = start + productsPerPage;
+      const shown = filtered.slice(start, end);
+  
+      grid.innerHTML = shown.map(p => `
+        <div class="product-card">
+          ${p.offer ? `<div class="badge">${p.offer}</div>` : ""}
+          <img src="${p.image}" alt="${p.name}">
+          <h3>${p.name}</h3>
+          <p>৳ ${p.price}</p>
+          <a href="https://wa.me/8801234567890?text=আমি অর্ডার করতে চাই ${p.name}: https://yourwebsite.com/product${p.id}" target="_blank">WhatsApp অর্ডার</a>
+        </div>`).join("");
+    }
+  
+    function renderFilteredPagination(filtered) {
+      const pagination = document.getElementById("pagination");
+      const totalPages = Math.ceil(filtered.length / productsPerPage);
+      pagination.innerHTML = Array.from({ length: totalPages }, (_, i) => `
+        <button onclick="goToFilteredPage(${i + 1})">${i + 1}</button>
+      `).join("");
+  
+      // Save filtered data for pagination
+      window.filteredCache = filtered;
+    }
+  
+    function goToFilteredPage(page) {
+      currentPage = page;
+      renderFilteredProducts(window.filteredCache || products);
+    }
+  </script>
+  
+
 </body>
 </html>
