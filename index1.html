@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maktabat al-Noor</title>
+  <style>
+    :root {
+      --bg-color: #121212;
+      --text-color: #f0f0f0;
+      --primary-color: #25D366;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      background: #1e1e1e;
+      padding: 10px 20px;
+    }
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .search-bar input {
+      padding: 5px;
+      width: 300px;
+    }
+    .header-controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .header-controls button, .header-controls select {
+      padding: 5px;
+    }
+
+    .slider-container {
+      overflow: hidden;
+      position: relative;
+      height: 250px;
+    }
+    .slides {
+      display: flex;
+      transition: 0.5s;
+    }
+    .slide {
+      min-width: 100%;
+      height: 250px;
+      background-size: cover;
+      background-position: center;
+    }
+    .slider-controls {
+      position: absolute;
+      top: 50%;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+    }
+    .slider-controls button {
+      background: rgba(0,0,0,0.5);
+      color: white;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+    .product-card {
+      background: #1e1e1e;
+      border: 1px solid #333;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+      position: relative;
+    }
+    .product-card img {
+      max-width: 100%;
+      height: 150px;
+      object-fit: cover;
+    }
+    .badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: crimson;
+      color: white;
+      padding: 2px 6px;
+      font-size: 12px;
+      border-radius: 3px;
+    }
+    .product-card a {
+      background: var(--primary-color);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 5px;
+      display: inline-block;
+      margin-top: 10px;
+      text-decoration: none;
+    }
+
+    .pagination {
+      text-align: center;
+      margin: 20px 0;
+    }
+    .pagination button {
+      margin: 0 5px;
+      padding: 6px 10px;
+    }
+
+    footer {
+      background: #000;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body class="dark-mode">
+
+<header>
+  <div class="logo" id="logoText">📚 Maktabat al-Noor</div>
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search...">
+  </div>
+  <div class="header-controls">
+    <button onclick="toggleDirection()">↔ <span id="dirText">RTL/LTR</span></button>
+    <button onclick="toggleDarkMode()">🌙 <span id="darkModeText">Dark Mode</span></button>
+    <select onchange="changeLanguage(this.value)">
+      <option value="en">English</option>
+      <option value="bn">বাংলা</option>
+      <option value="ar">العربية</option>
+    </select>
+  </div>
+</header>
+
+<div class="slider-container">
+  <div class="slides" id="slides">
+    <div class="slide" style="background-image: url('images/banner3.png');"></div>
+    <div class="slide" style="background-image: url('images/banner2.png');"></div>
+    <div class="slide" style="background-image: url('images/banner1.png');"></div>
+  </div>
+  <div class="slider-controls">
+    <button onclick="prevSlide()">←</button>
+    <button onclick="nextSlide()">→</button>
+  </div>
+</div>
+
+<div class="product-grid" id="productGrid"></div>
+<div class="pagination" id="pagination"></div>
+
+
+
+<footer>
+  <p>📞 মোবাইল: 01234567890 | 🏠 ঠিকানা: ঢাকা, বাংলাদেশ</p>
+</footer>
+
+<script>
+  const translations = {
+    en: {
+      logo: "📚 Maktabat al-Noor",
+      search: "Search...",
+      direction: "RTL/LTR",
+      darkMode: "Dark Mode"
+    },
+    bn: {
+      logo: "📚 মাকতাবাতুন নূর",
+      search: "অনুসন্ধান করুন...",
+      direction: "ডান-বাম",
+      darkMode: "ডার্ক মোড"
+    },
+    ar: {
+      logo: "📚 مكتبة النور",
+      search: "ابحث...",
+      direction: "يمين/يسار",
+      darkMode: "الوضع الداكن"
+    }
+  };
+
+  function toggleDirection() {
+    const html = document.documentElement;
+    html.dir = html.dir === "rtl" ? "ltr" : "rtl";
+    showSlide(currentIndex);
+  }
+
+  function toggleDarkMode() {
+    document.body.classList.toggle("dark-mode");
+  }
+
+  function changeLanguage(lang) {
+    const t = translations[lang];
+    document.getElementById("logoText").textContent = t.logo;
+    document.getElementById("searchInput").placeholder = t.search;
+    document.getElementById("dirText").textContent = t.direction;
+    document.getElementById("darkModeText").textContent = t.darkMode;
+    document.documentElement.setAttribute("dir", lang === "ar" ? "rtl" : "ltr");
+    showSlide(currentIndex);
+  }
+
+  let currentIndex = 0;
+  const slides = document.getElementById("slides");
+  const totalSlides = slides.children.length;
+
+  function showSlide(index) {
+  const dir = document.documentElement.dir;
+  const offset = index * 100;
+  slides.style.transform = dir === "rtl"
+    ? `translateX(${offset}%)`   // ডান দিক থেকে বামে
+    : `translateX(-${offset}%)`; // বাম দিক থেকে ডানে
+}
+
+
+  function prevSlide() {
+    currentIndex = currentIndex === 0 ? totalSlides - 1 : currentIndex - 1;
+    showSlide(currentIndex);
+  }
+
+  function nextSlide() {
+    currentIndex = (currentIndex + 1) % totalSlides;
+    showSlide(currentIndex);
+  }
+
+  setInterval(nextSlide, 5000);
+
+
+  const products = Array.from({ length: 200 }).map((_, i) => {
+    const isNew = i % 10 === 0;
+    const hasOffer = i % 7 === 0;
+    const discount = hasOffer ? `${10 + (i % 3) * 5}%` : "";
+    const stars = "★".repeat(4 + (i % 2)) + "☆".repeat(1 - (i % 2));
+    return {
+      id: i + 1,
+      name: `Product ${i + 1}`,
+      price: 100 + i,
+      image: `https://via.placeholder.com/200x150?text=Product+${i + 1}`,
+      badge: isNew ? "নতুন" : hasOffer ? "অফার" : "",
+      discount,
+      stars
+    };
+  });
+
+  const productsPerPage = 30;
+  let currentPage = 1;
+  let filteredCache = products;
+
+
+
+
+  
+
+  function renderProducts() {
+    const grid = document.getElementById("productGrid");
+    const start = (currentPage - 1) * productsPerPage;
+    const end = start + productsPerPage;
+    const shownProducts = products.slice(start, end);
+    grid.innerHTML = shownProducts.map(p => `
+      <div class="product-card">
+        ${p.offer ? `<div class="badge">${p.offer}</div>` : ""}
+        <img src="${p.image}" alt="${p.name}">
+        <h3>${p.name}</h3>
+        <p>৳ ${p.price}</p>
+        <a href="https://wa.me/8801234567890?text=আমি অর্ডার করতে চাই ${p.name}: https://yourwebsite.com/product${p.id}" target="_blank">WhatsApp অর্ডার</a>
+      </div>`).join("");
+  }
+
+  function renderPagination() {
+    const pagination = document.getElementById("pagination");
+    const totalPages = Math.ceil(products.length / productsPerPage);
+    pagination.innerHTML = Array.from({ length: totalPages }, (_, i) => `
+      <button onclick="goToPage(${i + 1})">${i + 1}</button>
+    `).join("");
+  }
+
+  function goToPage(page) {
+    currentPage = page;
+    renderProducts();
+  }
+
+  renderProducts();
+  renderPagination();
+  showSlide(currentIndex);
+</script>
+<script>
+    const searchInput = document.getElementById("searchInput");
+  
+    searchInput.addEventListener("input", () => {
+      const keyword = searchInput.value.toLowerCase();
+      const filteredProducts = products.filter(p =>
+        p.name.toLowerCase().includes(keyword)
+      );
+  
+      currentPage = 1;
+      renderFilteredProducts(filteredProducts);
+      renderFilteredPagination(filteredProducts);
+    });
+  
+    function renderFilteredProducts(filtered) {
+      const grid = document.getElementById("productGrid");
+      const start = (currentPage - 1) * productsPerPage;
+      const end = start + productsPerPage;
+      const shown = filtered.slice(start, end);
+  
+      grid.innerHTML = shown.map(p => `
+        <div class="product-card">
+          ${p.offer ? `<div class="badge">${p.offer}</div>` : ""}
+          <img src="${p.image}" alt="${p.name}">
+          <h3>${p.name}</h3>
+          <p>৳ ${p.price}</p>
+          <a href="https://wa.me/8801234567890?text=আমি অর্ডার করতে চাই ${p.name}: https://yourwebsite.com/product${p.id}" target="_blank">WhatsApp অর্ডার</a>
+        </div>`).join("");
+    }
+  
+    function renderFilteredPagination(filtered) {
+      const pagination = document.getElementById("pagination");
+      const totalPages = Math.ceil(filtered.length / productsPerPage);
+      pagination.innerHTML = Array.from({ length: totalPages }, (_, i) => `
+        <button onclick="goToFilteredPage(${i + 1})">${i + 1}</button>
+      `).join("");
+  
+      // Save filtered data for pagination
+      window.filteredCache = filtered;
+    }
+  
+    function goToFilteredPage(page) {
+      currentPage = page;
+      renderFilteredProducts(window.filteredCache || products);
+    }
+  </script>
+  
+
+</body>
+</html>
